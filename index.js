@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId; 
 
 const app = express();
 
@@ -23,11 +24,92 @@ async function run() {
       const database = client.db("Timzee");
     const products = database.collection("products");
     const userInfo = database.collection("userInfo");
+    const orders = database.collection("orders");
+    const reviews = database.collection("reviews");
 
 
-    console.log(2);
+    app.post('/addUser', async (req,res)=>{
+      const result = await userInfo.insertOne(req.body);
+      res.send(result);
+    })
+
+    app.put('/googleUser', async(req,res)=>{
+      const filter = { email: req.body.email };
+
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          email: req.body.email,
+          displayName: req.body.displayName
+        },
+      };
+
+      const result = await userInfo.updateOne(filter, updateDoc, options);
+      // console.log(result);
+    })
+
+    app.get('/allProducts', async (req,res)=>{
+      const result = await products.find({}).toArray();
+      res.send(result);
+    })
+
+    app.get('/purchase/:id', async (req,res)=>{
+      const productId = {
+        _id: ObjectId(req.params.id)
+      } 
+
+      const result= await products.findOne(productId);
+      res.send(result);
+
+    })
+
+    app.post('/confirmOrder', async(req,res)=>{
+      const result = await orders.insertOne(req.body);
+      res.send(result);
+    })
+
+    app.post('/addReview', async(req,res)=>{
+      const result = await reviews.insertOne(req.body);
+      res.send(result);
+    })
+
+    app.get('/myOrder/:email', async (req,res)=>{
+      const userEmail = {email: req.params.email};
+      const result = await orders.find(userEmail).toArray();
+      res.send(result);
+
+    })
+
+    app.delete('/deleteProduct/:id', async (req,res)=>{
+      // console.log(req.params.id);
+      const product  = {
+        _id: ObjectId(req.params.id)
+      }
+
+      const result = await orders.deleteOne(product);
+      res.send(result);
+    })
+
+    app.post('/addNewItem', async(req,res)=>{
+      // console.log(req.body);
+      const result = await products.insertOne(req.body);
+      res.send(result);
+    })
+
+    app.get('/manageAllOrders', async (req,res)=>{
+      const result = await orders.find({}).toArray();
+      res.send(result);
+    })
+
+    app.delete('/deleteProducts/:id', async(req,res)=>{
+      const item = {_id: ObjectId(req.params.id)}
+      const result = await products.deleteOne(item);
+      res.send(result);
+      // console.log(req.params.id);
+    })
     
-     
+    
       
     } finally {
     //   await client.close();
