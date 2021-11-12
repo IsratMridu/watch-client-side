@@ -108,6 +108,56 @@ async function run() {
       res.send(result);
       // console.log(req.params.id);
     })
+
+    app.put('/addRole', async (req,res)=>{
+      // console.log(req.body);
+      const filter = { email: req.body.email };
+      // console.log(filter);
+      const updateDoc = {
+        $set: {
+          role:'admin'
+        },
+      };
+
+      const result = await userInfo.updateOne(filter, updateDoc);
+      res.send(result);
+  
+    })
+
+    app.put('/updateOrderStatus', async(req, res)=>{
+      // console.log(req.body._id);
+      const filter = {_id: ObjectId(req.body._id)};
+      const updateDoc = {
+        $set: {
+          status: 'Shipped'
+        },
+      };
+      const result = await orders.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.get('/findReview', async (req,res)=>{
+      const result = await reviews.find({}).toArray();
+      // console.log(result);
+      res.send(result);
+    })
+
+    app.get('/checkAdmin/:email', async(req,res)=>{
+
+      // console.log(req.params.email);
+      const user ={
+        email: req.params.email
+      }
+      const result = await userInfo.findOne(user);
+      isAdmin = false;
+
+      if(result.role == 'admin'){
+        isAdmin = true;
+      }
+      res.send({
+        admin: isAdmin
+      })
+    })
     
     
       
